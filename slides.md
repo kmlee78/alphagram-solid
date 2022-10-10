@@ -477,6 +477,24 @@ layout: center
 = 메소드의 오버라이딩이 부모 클래스 메소드의 본질을 바꿔선 안된다.
 
 ---
+layout: center
+---
+
+## 리스코프 치환 원칙을 위반하는 경우?
+<br/>
+<v-click>
+<span>
+    - 하위 클래스가 상위 클래스의 <span class="text-red-500">변수의 타입을 바꾸거나</span>, 메소드의 파라미터 또는 <span class="text-red-500">리턴값의 타입 또는 갯수를 바꾸는 경우</span> (하위 클래스 중 하나가 호환되지 않는 방식으로 메소드를 재정의하는 경우)
+</span>
+</v-click>
+<br/><br/>
+<v-click>
+<span>
+    - 하위 클래스가 상위 클래스의 <span class="text-red-500">의도와 다르게 메소드를 오버라이딩 하는 경우</span>
+</span>
+</v-click>
+
+---
 layout: two-cols
 ---
 
@@ -517,6 +535,63 @@ rect = Square()
 rect.set_width(4)
 rect.set_height(5)
 print(rect.area)  # It prints 25, instead of 20
+```
+
+- 논리적으로 정사각형은 직사각형이지만,
+
+  상속관계를 두는 것은 적절치 않음
+
+- 리스코프 원칙을 위반할 경우,
+
+  Open-Closed 원칙을 위반할 확률이 높다.
+  
+  (if 구문등으로 다르게 처리해야하므로)
+
+---
+layout: two-cols
+---
+
+# BAD
+
+```js
+class Rectangle {
+    constructor() {
+        this.width = 0;
+        this.height = 0;
+    }
+    setWidth(w) {
+        this.width = w;
+    }
+    setHeight(h) {
+        this.height = h;
+    }
+    get area() {
+        return this.width * this.height;
+    }
+}
+class Square extends Rectangle {
+    setWidth(w) {
+        this.width = w;
+        this.height = w;
+    }
+    setHeight(h) {
+        this.width = h;
+        this.height = h;
+    }
+}
+```
+
+::right::
+
+<br/><br/>
+
+```js
+(function () {
+    const square = new Square();
+    square.setWidth(4);
+    square.setHeight(5);
+    console.log(square.area); // It prints 25 instead of 20
+})();
 ```
 
 - 논리적으로 정사각형은 직사각형이지만,
@@ -580,6 +655,47 @@ print(rect2.area) # 20
 -->
 
 ---
+layout: two-cols
+---
+
+# GOOD
+
+```js
+class Shape {
+}
+class Rectangle extends Shape {
+    constructor(w, h) {
+        super();
+        this.width = w;
+        this.height = h;
+    }
+    get area() {
+        return this.width * this.height;
+    }
+}
+class Square extends Shape {
+    constructor(l) {
+        super();
+        this.length = l;
+    }
+    get area() {
+        return this.length * this.length;
+    }
+}
+```
+
+::right::
+
+<br/><br/>
+
+```js
+(function () {
+    const square = new Square(5);
+    console.log(square.area);
+})();
+```
+
+---
 layout: center
 ---
 
@@ -628,6 +744,46 @@ for bird in birds:
 layout: two-cols
 ---
 
+# BAD
+
+```js
+class Bird {
+    eat(food) {
+        console.log(`I can eat ${food}`);
+    }
+    fly() {
+        console.log("Fly!! Fly!!");
+    }
+}
+class Duck extends Bird {
+    fly() {
+        console.log("I quack, quack while flying!!");
+    }
+}
+class Chicken extends Bird {
+    fly() {
+        console.error("I cannot fly!!");
+    }
+}
+```
+
+::right::
+
+<br/><br/>
+
+```js
+(function () {
+    const birds = [new Duck(), new Chicken()];
+    for (const bird of birds) {
+        bird.fly();
+    }
+})();
+```
+
+---
+layout: two-cols
+---
+
 # GOOD
 
 ```py
@@ -670,6 +826,46 @@ Plane은 새가 아니다. 새일 필요가 없다.
 
 다음에 설명할 인터페이스 분리 원칙과도 이어지는 내용
 -->
+
+---
+layout: two-cols
+---
+
+# GOOD
+
+```js
+class Eatable {
+    eat(food) {
+        console.log(`I can eat ${food}`);
+    }
+}
+class Flyable {
+    fly() {
+        console.log("Fly, Fly!!");
+    }
+}
+
+class Duck extends Eatable, Flyable {}
+class Plane extends Flyable {}
+class Chicken extends Eatable{}
+```
+
+::right::
+
+<br/><br/>
+
+```js
+function go_flying(flyables) {
+    for (const each of flyables) {
+        each.fly();
+    }
+}
+
+(function () {
+    const birds = [new Duck(), new Plane()];
+    go_flying(birds);
+})();
+```
 
 ---
 layout: center
