@@ -73,9 +73,7 @@ layout: center
 ---
 
 <img src="https://user-images.githubusercontent.com/72758925/194902871-4636deaf-55e5-4165-9494-344ec2b9a687.png" width="300" />
-<v-click>
-    개발팀 권장 독서!
-</v-click>
+개발팀 권장 독서!
 
 ---
 layout: center
@@ -309,6 +307,49 @@ sender.send("fax", "012-345-6789")
 layout: two-cols
 ---
 
+# BAD
+
+```js
+class ReportSender {
+    constructor(report) {
+        this.report = report;
+    }
+    send(send_type, receiver) {
+        switch (send_type) {
+            case "email":
+                console.log("email 전송", receiver);
+                break;
+            case "printer":
+                console.log("printer", receiver);
+                break;
+            case "fax":
+                console.log("Fax 전송", receiver);
+        }
+    }
+}
+
+(function () {
+    const sender = new ReportSender("SOME_REPORT_DATA");
+    sender.send("email", "john@test.com");
+    sender.send("printer", "http://localhost:9100");
+    sender.send("fax", "012-345-6789");
+})();
+```
+
+::right::
+
+<br/><br/>
+
+- 새로운 기능을 추가하게 될 때, 기존 클래스의 함수 (send)를 건드리게 됨 → 다른 기능을 깨뜨릴 위험성 (결합도⬆️)
+
+  💬 만약 다른 유형의 sender가 추가 된다면? (e.g, MS팀즈)
+  
+  💬 만약 추가적인 정보가 더 필요하다면? (e.g, API키)
+
+---
+layout: two-cols
+---
+
 # GOOD
 
 ```py
@@ -364,6 +405,62 @@ sender.send("jane")
 - 위코드에서 get_sender로 원하는 instance를 선택 => 팩토리 패턴이라고 부름
 - 디자인 패턴들도 대부분 SOLID 기반/보완하기 위해 만들어짐
  -->
+
+---
+layout: two-cols
+---
+
+# GOOD
+
+```js
+class BaseReportSender {
+    constructor(report) {
+        this.report = report;
+    }
+}
+class EmailSender extends BaseReportSender {
+    constructor(report, from) {
+        super(report);
+        this.from = from;
+    }
+    send(to) {
+        console.log(`send email from: ${this.from} to: ${to}`);
+    }
+}
+class MSTeamsSender extends BaseReportSender {
+    constructor(report, apikey) {
+        super(report);
+        this.apikey = apikey;
+    }
+    send(to) {
+        console.log(`send email from: ${this.apikey} to: ${to}`);
+    }
+}
+```
+
+::right::
+
+<br/><br/>
+
+```js
+function get_sender(sender_type) {
+    switch (sender_type) {
+        case "email":
+            return new EmailSender("report data", "admin@test.com");
+        case "msteams":
+            return new MSTeamsSender("report data", "key-xxxxx");
+        default:
+            throw Error("Invalid Sender type");
+    }
+}
+
+(function () {
+    const sender1 = get_sender("email");
+    sender1.send("john@test.com");
+    const sender2 = get_sender("msteams");
+    sender2.send("jane");
+})();
+```
 
 ---
 layout: center
