@@ -1131,6 +1131,38 @@ alert_service.alert("Hello, World")
 layout: two-cols
 ---
 
+# BAD
+
+```js
+class TeamsBot {
+    sendMessageToTeams(message) {
+        console.log(`send ${message} to teams`);
+    }
+}
+class SlackBot {
+    sendMesssageToSlack(channel, message) {
+        console.log(`send ${message} to slack (${channel})`);
+    }
+}
+class AlertService {
+    constructor() {
+        this.teamsbot = new TeamsBot();
+    }
+    alert(message) {
+        this.teamsbot.sendMessageToTeams(message);
+    }
+}
+
+(function () {
+    const alert_service = new AlertService();
+    alert_service.alert("Hello, World");
+})();
+```
+
+---
+layout: two-cols
+---
+
 # Another BAD
 
 ```py
@@ -1182,6 +1214,56 @@ alert_service.alert()
 layout: two-cols
 ---
 
+# Another BAD
+
+```js
+class MessageSender {
+    send(message) {
+        if ($this instanceof TeamsBot) {
+            $this.send_message_to_teams(message);
+        }
+        else if ($this instanceof SlackBot) {
+            $this.send_message_to_slack(message);
+        }
+    }
+}
+
+class TeamsBot extends MessageSender {
+    send_message_to_teams(message) {
+        console.log(`Send ${message} to teams`);
+    }
+}
+class SlackBot extends MessageSender {
+    send_message_to_slack(message) {
+        console.log(`Send ${message} to slack`);
+    }
+}
+```
+
+::right::
+
+<br/><br/>
+
+```js
+class AlertService {
+    constructor(sender) {
+        this.sender = sender;
+    }
+    alert(message) {
+        sender.send(message);
+    }
+}
+(function () {
+    const sender = new TeamsBot()
+    const alert_service = new AlertService(sender);
+    alert_service.send();
+})();
+```
+
+---
+layout: two-cols
+---
+
 # Good
 
 ```py
@@ -1220,6 +1302,52 @@ alert_service.alert()
 ```
 
 - 하위 모듈과 상위 모듈이 모두 추상화된 모듈 `MessageSender`에 의존하게 함으로써 다른 모듈로 변경이 자유로움
+
+---
+layout: two-cols
+---
+
+# Good
+
+```js
+class MessageSender {
+    send(message) {}
+}
+
+class TeamsBot extends MessageSender{
+    send(message) {
+        console.log(`send '${message}' to teams`);
+    }
+}
+class SlackBot extends MessageSender{
+    constructor(channel) {
+        this.channel = channel;
+    }
+    send(message) {
+        console.log(`send '${message}' to teams`);
+    }
+}
+```
+
+::right::
+
+<br/><br/>
+
+```js
+class AlertService {
+    constructor(sender) {
+        this.sender = sender;
+    }
+    alert(message) {
+        this.sender.send(message);
+    }
+}
+(function () {
+    const slackBot = new SlackBot("HAPPY_CHANNEL");
+    const alert_service = new AlertService(slackBot);
+    alert_service.alert("Hello, World");
+})();
+```
 
 ---
 layout: center
