@@ -931,6 +931,53 @@ npc.move(5, 10) # Shouldn't be possible
 layout: two-cols
 ---
 
+# BAD
+
+```js
+class Character {
+    attack(other) {
+        console.log(`I attack ${other}`);
+    }
+    talk(other) {
+        console.log(`I talk to ${other}`);
+    }
+    move(x, y) {
+        console.log(`I move from ${x} to ${y}`);
+    }
+}
+```
+
+::right::
+
+<br/><br/>
+
+```js
+class Monster extends Character {
+    attack(other) {
+        console.log(`Monster attacks ${other}`);
+    }
+    move(x, y) {
+        console.log(`Monster moves to (${x}, ${y})`);
+    }
+}
+class NPC extends Character {
+    talk(other) {
+        console.log(`NPC talk to ${other}`);
+    }
+}
+
+(function () {
+    const monster = new Monster();
+    const npc = new NPC();
+    monster.talk("john"); // Shouldn't be possible
+    npc.move(5, 10); // Shouldn't be possible
+})();
+```
+
+---
+layout: two-cols
+---
+
 # GOOD
 
 ```py
@@ -980,6 +1027,56 @@ npc.talk("jane")
 <!--
 - Able이라는 단어를 많이쓰는 것 언급 (자격)
 -->
+
+---
+layout: two-cols
+---
+
+# GOOD
+
+```js
+class Attackable {
+    attack(other) {}
+}
+class Talkable {
+    talk(other) {}
+}
+class Movable {
+    move(x, y) {}
+}
+
+class Monster extends Attackable, Movable {
+    attack(other) {
+        console.log(`Monster attacks ${other}`);
+    }
+    move(x, y) {
+        console.log(`Monster moves to (${x}, ${y})`);
+    }
+}
+class NPC extends Talkable {
+    talk(other) {
+        console.log(`NPC talk to ${other}`);
+    }
+}
+```
+
+::right::
+
+<br/><br/>
+
+```js
+(function () {
+    const monster = new Monster();
+    const npc = new NPC();
+    monster.move(10, 15);
+    monster.attack("john");
+    npc.talk("john");
+})();
+```
+
+- 필요한 속성(역할)만 사용 - 사이드 이펙트  ⬇️
+- 가독성 ⬆️ - 각 클래스가 어떤 역할을 하는지 쉽게 알 수 있음
+- 우리가 Vue에서 사용하는 Mixin도 유사한 관점에서 바라보자
 
 ---
 layout: center
