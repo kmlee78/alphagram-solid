@@ -72,6 +72,15 @@ layout: center
 layout: center
 ---
 
+<img src="https://user-images.githubusercontent.com/72758925/194902871-4636deaf-55e5-4165-9494-344ec2b9a687.png" width="300" />
+<v-click>
+    개발팀 권장 독서!
+</v-click>
+
+---
+layout: center
+---
+
 # <span class="text-red-500">S</span>ingle Responsibility
 
 <div></div>
@@ -111,7 +120,28 @@ manager.save()
 
 ::right::
 
-<br/><br/>
+```js
+class DataManager {
+    read() {
+        console.log("Reading data...");
+        console.log("Parsing data...");
+    }
+    save() {
+        console.log("Saving data...");
+    }
+}
+
+(function () {
+    const saver = new DataSaver();
+    saver.read();
+    saver.save();
+})();
+```
+
+---
+layout: center
+---
+
 
 - DataSaver 책임: 읽기, 파싱, 저장 (해당 객체에 대한 책임 파악이 어려움 → 가독성⬇️)
 - 클래스 내 다른 역할을 수행하는 코드간의 의존성이 높아짐 > 코드 변경의 어려움/부작용
@@ -172,9 +202,57 @@ writer.save(parsed_data)
  -->
 
 ---
-layout: center
+layout: two-cols
 ---
 
+# GOOD
+
+```js
+class Reader {
+    read() {
+        console.log("Reading data...");
+        return [{ "a": 1, "b": 2 }];
+    }
+}
+class Parser {
+    parse(data) {
+        console.log("Parsing data...");
+        return data;
+    }
+}
+class Saver {
+    save(data) {
+        console.log(`Saving data... ${data}`);
+    }
+}
+(function () {
+    const reader = new Reader();
+    const parser = new Parser();
+    const saver = new Saver();
+    let data = reader.read();
+    data = parser.parse(data);
+    saver.save(data);
+})();
+```
+
+::right::
+
+<br/><br/>
+
+- 각 책임별로 클래스 분리
+- 결합도(의존도) ⬇️
+  
+  : 코드 변경이 영향을 줄 가능성 ⬇️
+
+- 확장성 ⬆️ 
+  
+  : 인터페이스를 통일하여 다양한 모듈을 만들어서 사용할 수 있음 (즉, 조합하기 쉬워진다.)
+
+  `CsvReader`, `JsonReader`, `JsonParser`, `YamlParser`, `CsvSaver`, `PickleSaver`
+
+---
+layout: center
+---
 
 # <span class="text-red-500">O</span>pen Closed
 
